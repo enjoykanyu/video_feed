@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	user "video_douyin/kitex_gen/user"
+	"crypto/rand"
+    "fmt"
+    "math/big"
 )
 
 // UserServiceImpl implements the last service interface defined in the IDL.
@@ -59,5 +62,32 @@ func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfo
 // SendVerifyCode implements the UserServiceImpl interface.
 func (s *UserServiceImpl) SendVerifyCode(ctx context.Context, req *user.SendVerifyCodeRequest) (resp *user.SendVerifyCodeResponse, err error) {
 	// TODO: Your code here...
-	return
+	resp = user.NewSendVerifyCodeResponse()
+	// 1. 校验参数异常
+	if req.GetPhone() == "" {
+
+		errorMsg := "Invalid request parameters" // 声明字符串变量
+		resp.SetMessage(&errorMsg)               // 传递指针
+		resp.SetSuccess(true)
+	}
+	//2,查询db看用户手机号是否存在
+
+	//3, 生成验证码
+	code _ := generateCaptcha()
+	//4. 保存验证码到redis
+	//5. 发送验证码
+	return code
 }
+
+ 
+func generateCaptcha() (string, error) {
+    // 生成一个0到999999之间的随机数（6位数）
+    n, err := rand.Int(rand.Reader, big.NewInt(1000000)) // 1000000是10^6，即最大值+1
+    if err != nil {
+        return "", err
+    }
+    // 将随机数转换为字符串，并确保长度为6位（不足时前面补0）
+    captcha := fmt.Sprintf("%06d", n) // %06d确保至少6位数字，不足时前面补0
+    return captcha, nil
+}
+ 
