@@ -36,6 +36,17 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 // Login implements the UserServiceImpl interface.
 func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (resp *user.LoginResponse, err error) {
 	// TODO: Your code here...
+	resp = user.NewLoginResponse()
+	// 1. 校验参数异常
+	if req.GetPhone() == "" || req.GetVerifyCode() == "" {
+
+		errorMsg := "Invalid request parameters" // 声明字符串变量
+		resp.SetMessage(&errorMsg)               // 传递指针
+		resp.SetSuccess(true)
+	}
+	// 2. 查询db
+
+	// 3. 生成token
 	return
 }
 
