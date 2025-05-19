@@ -5,6 +5,7 @@ import (
 
 	"api_gateway/user"
 	// "video_douyin/kitex_gen/user"
+	"video_douyin/pkg/db"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
@@ -14,6 +15,10 @@ import (
 // )
 
 func main() {
+	// 初始化MySQL
+	if err := db.InitMySQL("user:password@tcp(127.0.0.1:3306)/douyin?charset=utf8mb4&parseTime=True&loc=Local"); err != nil {
+		log.Fatalf("MySQL初始化失败: %v", err)
+	}
 	// c, err := userservice.NewClient("douyin.video.user", client.WithHostPorts("0.0.0.0:8888"))
 	// if err != nil {
 	// 	log.Fatal(err)
