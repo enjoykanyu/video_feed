@@ -24,6 +24,9 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 	// cli = c
+
+	// 初始化Redis
+	db.InitRedis("localhost:6379", "", 0)
 	// 初始化 Hertz 服务器实例，监听本地 8889 端口
 	// WithHostPorts 配置项指定服务监听地址:ml-citation{ref="6,7" data="citationList"}
 	hz := server.New(server.WithHostPorts("localhost:8889"))
