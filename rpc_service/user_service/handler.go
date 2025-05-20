@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -148,9 +149,44 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (re
 }
 
 // GetUserInfo implements the UserServiceImpl interface.
+
 func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfoRequest) (resp *user.GetUserInfoResponse, err error) {
-	// TODO: Your code here...
-	return
+	resp = user.NewGetUserInfoResponse()
+
+	// 1. 参数校验
+	if req.GetUserId() == 0 {
+		errorMsg := "Invalid user id"
+		resp.SetMessage(&errorMsg)
+		resp.SetSuccess(false)
+		return resp, nil
+	}
+
+	// 2. 查询用户信息
+	var userModel model.User
+	if err := s.db.Where("id = ?", req.GetUserId()).First(&userModel).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			errorMsg := "User not found"
+			resp.SetMessage(&errorMsg)
+			resp.SetSuccess(false)
+			return resp, nil
+		}
+		errorMsg := "Database error"
+		resp.SetMessage(&errorMsg)
+		resp.SetSuccess(false)
+		return resp, nil
+	}
+
+	// 3. 构造UserInfo结构体
+	userInfo := &user.UserInfo{
+		UserId:   userModel.ID,
+		Username: userModel.Nickname,
+		Avatar:   &userModel.Avatar,
+	}
+
+	// 4. 设置响应
+	resp.SetSuccess(true)
+	resp.SetUserInfo(userInfo)
+	return resp, nil
 }
 
 // SendVerifyCode implements the UserServiceImpl interface.
