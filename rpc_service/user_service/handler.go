@@ -50,7 +50,7 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 		return resp, nil
 	}
 
-	// 3. 检查用户是否存在
+	// 3. 检查用户是否存在 存在则进入注册网页
 	var existingUser model.User
 	if err := s.db.Where("phone = ?", req.GetPhone()).First(&existingUser).Error; err == nil {
 		errorMsg := "用户已存在"
@@ -106,10 +106,45 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (re
 		resp.SetMessage(&errorMsg)               // 传递指针
 		resp.SetSuccess(true)
 	}
-	// 2. 查询db
+	//2，验证码校验
+	// 2. 验证码校验
+	storedCode, err := s.redis.Get(verifyCodePrefix + req.GetPhone()).Result()
+	if err != nil || storedCode != req.GetVerifyCode() {
+		errorMsg := "验证码错误或已过期"
+		resp.SetMessage(&errorMsg)
+		resp.SetSuccess(false)
+		return resp, nil
+	}
+	// 3. 查询用户是否存在
+	var existingUser model.User
+	if err := s.db.Where("phone = ?", req.GetPhone()).First(&existingUser).Error; err != nil {
+		errorMsg := "用户不存在"
+		resp.SetMessage(&errorMsg)
+		resp.SetSuccess(false)
+		return resp, nil
+	}
 
-	// 3. 生成token
-	return
+	// 4. 生成token
+	token, err := generateToken()
+	if err != nil {
+		errorMsg := "系统错误"
+		resp.SetMessage(&errorMsg)
+		resp.SetSuccess(false)
+		return resp, nil
+	}
+
+	// 5. 存储token
+	if err := s.redis.Set(tokenPrefix+token, existingUser.ID, tokenExpiration).Err(); err != nil {
+		errorMsg := "系统错误"
+		resp.SetMessage(&errorMsg)
+		resp.SetSuccess(false)
+		return resp, nil
+	}
+	successMsg := "登录成功"
+	resp.SetMessage(&successMsg)
+	resp.SetSuccess(true)
+	// resp.SetToken(token) 需加上返回给前端
+	return resp, nil
 }
 
 // GetUserInfo implements the UserServiceImpl interface.
