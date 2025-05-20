@@ -122,15 +122,16 @@ func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfo
 func (s *UserServiceImpl) SendVerifyCode(ctx context.Context, req *user.SendVerifyCodeRequest) (resp *user.SendVerifyCodeResponse, err error) {
 	// TODO: Your code here...
 	resp = user.NewSendVerifyCodeResponse()
+	phone := req.GetPhone()
 	// 1. 校验参数异常
-	if req.GetPhone() == "" {
+	if phone == "" {
 
 		errorMsg := "Invalid request parameters" // 声明字符串变量
 		resp.SetMessage(&errorMsg)               // 传递指针
 		resp.SetSuccess(false)
 	}
 	//2,查询db看用户手机号是否存在
-
+	CheckPhoneExists(s.db, phone)
 	//3, 生成验证码
 	code, _ := generateCaptcha()
 
@@ -161,4 +162,18 @@ func generateToken() (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%x", b), nil
+}
+
+// CheckPhoneExists 检查手机号是否已存在
+func CheckPhoneExists(db *gorm.DB, phone string) (bool, error) {
+	var user = &model.User{}
+	result := db.Where("phone = ?", phone).First(user)
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return false, nil // 手机号不存在
+		}
+		return false, result.Error // 查询出错
+	}
+	return true, nil // 手机号已存在
 }
