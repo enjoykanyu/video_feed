@@ -137,6 +137,12 @@ func (s *UserServiceImpl) SendVerifyCode(ctx context.Context, req *user.SendVeri
 
 	log.Printf("code: %s", code) // 记录请求参数
 	//4. 保存验证码到redis
+	if err := s.saveCodeToRedis(phone, code); err != nil {
+		errorMsg := "Failed to save verification code"
+		resp.SetMessage(&errorMsg)
+		resp.SetSuccess(false)
+		return resp, nil
+	}
 	//5. 发送验证码
 	successMsg := "success"      // 声明字符串变量
 	resp.SetMessage(&successMsg) // 传递指针
@@ -176,4 +182,10 @@ func CheckPhoneExists(db *gorm.DB, phone string) (bool, error) {
 		return false, result.Error // 查询出错
 	}
 	return true, nil // 手机号已存在
+}
+
+// 存入redis
+func (s *UserServiceImpl) saveCodeToRedis(phone, code string) error {
+	key := verifyCodePrefix + phone
+	return s.redis.Set(key, code, codeExpiration).Err()
 }
