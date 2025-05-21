@@ -38,7 +38,7 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 	if req.GetPhone() == "" || req.GetVerifyCode() == "" {
 		errorMsg := "Invalid request parameters" // 声明字符串变量
 		resp.SetMessage(&errorMsg)               // 传递指针
-		resp.SetSuccess(true)
+		resp.SetSuccess(false)
 		return
 	}
 
