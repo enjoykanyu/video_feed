@@ -28,9 +28,8 @@ const (
 	tokenExpiration  = 24 * time.Hour
 )
 
-// Register implements the UserServiceImpl interface.
+// Register implements the UserServiceImpl interface
 func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterRequest) (resp *user.RegisterResponse, err error) {
-	// TODO: Your code here...
 
 	resp = user.NewRegisterResponse()
 	if resp == nil {
@@ -119,7 +118,6 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 
 // Login implements the UserServiceImpl interface.
 func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (resp *user.LoginResponse, err error) {
-	// TODO: Your code here...
 	resp = user.NewLoginResponse()
 	// 1. 校验参数异常
 	if req.GetPhone() == "" || req.GetVerifyCode() == "" {
@@ -170,7 +168,6 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (re
 }
 
 // GetUserInfo implements the UserServiceImpl interface.
-
 func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfoRequest) (resp *user.GetUserInfoResponse, err error) {
 	resp = user.NewGetUserInfoResponse()
 
@@ -212,7 +209,6 @@ func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfo
 
 // SendVerifyCode implements the UserServiceImpl interface.
 func (s *UserServiceImpl) SendVerifyCode(ctx context.Context, req *user.SendVerifyCodeRequest) (resp *user.SendVerifyCodeResponse, err error) {
-	// TODO: Your code here...
 	resp = user.NewSendVerifyCodeResponse()
 	phone := req.GetPhone()
 	// 1. 校验参数异常
