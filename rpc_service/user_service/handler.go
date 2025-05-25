@@ -11,7 +11,7 @@ import (
 	"video_douyin/dal/model"
 	user "video_douyin/kitex_gen/user"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
