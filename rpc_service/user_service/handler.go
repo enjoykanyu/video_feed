@@ -81,6 +81,9 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 		errorMsg := "注册失败"
 		resp.SetMessage(&errorMsg)
 		resp.SetSuccess(false)
+		if resp.Message != nil {
+			log.Printf("错误详情: %s\n", *resp.Message)
+		}
 		return resp, nil
 	}
 
