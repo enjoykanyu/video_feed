@@ -37,10 +37,14 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 		return nil, errors.New("failed to initialize response")
 	}
 	// 1. Validate the request parameters
+	log.Printf("进入rpc: %v\n", req.GetPhone())
 	if req.GetPhone() == "" || req.GetVerifyCode() == "" {
-		errorMsg := "Invalid request parameters" // 声明字符串变量
-		resp.SetMessage(&errorMsg)               // 传递指针
+		msg := "参数为空错误" // 改为包级变量或堆分配
+		resp.SetMessage(&msg)
 		resp.SetSuccess(false)
+		if resp.Message != nil {
+			log.Printf("错误详情: %s\n", *resp.Message)
+		}
 		return
 	}
 
