@@ -33,7 +33,9 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 	// TODO: Your code here...
 
 	resp = user.NewRegisterResponse()
-
+	if resp == nil {
+		return nil, errors.New("failed to initialize response")
+	}
 	// 1. Validate the request parameters
 	if req.GetPhone() == "" || req.GetVerifyCode() == "" {
 		errorMsg := "Invalid request parameters" // 声明字符串变量
