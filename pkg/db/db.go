@@ -3,21 +3,30 @@ package db
 import (
 	"context"
 	"fmt"
+	"sync"
 	"video_douyin/dal/model"
 
 	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 var (
-	DB    *gorm.DB
-	Redis *redis.Client
+	DB        *gorm.DB
+	Redis     *redis.Client
+	redisOnce sync.Once
 )
 
 func InitMySQL(dsn string) error {
 	var err error
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+		// 禁用表名复数化
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	})
 	if err != nil {
 		return err
 	}
@@ -29,15 +38,16 @@ func InitMySQL(dsn string) error {
 	return nil
 }
 
-func InitRedis(addr, password string, db int) {
-	Redis = redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: password,
-		DB:       db,
+func InitRedis(addr string, db int) error {
+	var initErr error
+	redisOnce.Do(func() {
+		Redis = redis.NewClient(&redis.Options{
+			Addr: addr,
+			DB:   db,
+		})
+		if _, err := Redis.Ping(context.Background()).Result(); err != nil {
+			initErr = fmt.Errorf("redis连接失败: %w", err)
+		}
 	})
-
-	// 测试连接
-	if _, err := Redis.Ping(context.Background()).Result(); err != nil {
-		panic(fmt.Sprintf("Redis连接失败: %v", err))
-	}
+	return initErr
 }
