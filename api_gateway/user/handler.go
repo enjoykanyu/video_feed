@@ -3,13 +3,16 @@ package user
 import (
 	"context"
 	"log"
+	"net/http"
 	"time"
 	"video_douyin/kitex_gen/user"             // Kitex生成的用户服务数据结构
 	"video_douyin/kitex_gen/user/userservice" // Kitex生成的用户服务客户端
 
-	"github.com/cloudwego/hertz/pkg/app"        // Hertz HTTP上下文处理
-	"github.com/cloudwego/kitex/client"         // Kitex客户端核心
-	"github.com/cloudwego/kitex/client/callopt" // Kitex调用选项
+	"github.com/cloudwego/hertz/pkg/app" // Hertz HTTP上下文处理
+	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/cloudwego/kitex/client" // Kitex客户端核心
+	"github.com/cloudwego/kitex/client/callopt"
+	// Kitex调用选项
 )
 
 // 全局用户服务客户端实例
@@ -27,14 +30,38 @@ func init() {
 	userClient = c
 }
 
+// type RegisterRequest struct {
+// 	Phone      string `thrift:"phone,1,required" frugal:"1,required,string" json:"phone"`
+// 	VerifyCode string `thrift:"verifyCode,2,required" frugal:"2,required,string" json:"verifyCode"`
+// }
+
+// func NewRegisterRequest() *RegisterRequest {
+// 	return &RegisterRequest{}
+// }
+
 // Handler 处理用户注册HTTP请求
 func Handler(ctx context.Context, c *app.RequestContext) {
-	req := user.NewRegisterRequest()   // 创建注册请求结构体
-	log.Printf("Phone: %s", req.Phone) // 记录请求参数
+	req := user.NewRegisterRequest()
+	// var RegisterRequest struct {
+	// 	Phone      string `thrift:"phone,1,required" frugal:"1,required,string" json:"phone"`
+	// 	VerifyCode string `thrift:"verifyCode,2,required" frugal:"2,required,string" json:"verifyCode"`
+	// }
 
+	// req := NewRegisterRequest()
+
+	if err := c.BindAndValidate(req); err != nil {
+		c.JSON(http.StatusOK, utils.H{
+			"message": err.Error(),
+			"code":    http.StatusBadRequest,
+		})
+		return
+	}
+	log.Printf("请求参数: %v\n", req.Phone)      // 打印请求参数
+	log.Printf("请求参数: %v\n", req.VerifyCode) // 打印请求参数
+	log.Printf("参数类型: %T\n", req)            // 打印请求参数
 	// 调用用户服务RPC接口，超时3秒
 	resp, err := userClient.Register(
-		context.Background(),
+		ctx,
 		req,
 		callopt.WithRPCTimeout(3*time.Second),
 	)
