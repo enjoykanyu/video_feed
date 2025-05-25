@@ -49,11 +49,14 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 	}
 
 	// 2. 验证码校验
-	storedCode, err := s.redis.Get(verifyCodePrefix + req.GetPhone()).Result()
+	storedCode, err := s.redis.Get(ctx, verifyCodePrefix+req.GetPhone()).Result()
 	if err != nil || storedCode != req.GetVerifyCode() {
-		errorMsg := "验证码错误或已过期"
-		resp.SetMessage(&errorMsg)
+		msg := "验证码错误或已过期"
+		resp.SetMessage(&msg)
 		resp.SetSuccess(false)
+		if resp.Message != nil {
+			log.Printf("错误详情: %s\n", *resp.Message)
+		}
 		return resp, nil
 	}
 
