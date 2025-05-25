@@ -100,7 +100,7 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 	}
 
 	// 6. 存储token
-	if err := s.redis.Set(tokenPrefix+token, newUser.ID, tokenExpiration).Err(); err != nil {
+	if err := s.redis.Set(ctx, tokenPrefix+token, newUser.ID, tokenExpiration).Err(); err != nil {
 		errorMsg := "系统错误"
 		resp.SetMessage(&errorMsg)
 		resp.SetSuccess(false)
@@ -130,7 +130,7 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (re
 	}
 	//2，验证码校验
 	// 2. 验证码校验
-	storedCode, err := s.redis.Get(verifyCodePrefix + req.GetPhone()).Result()
+	storedCode, err := s.redis.Get(ctx, verifyCodePrefix+req.GetPhone()).Result()
 	if err != nil || storedCode != req.GetVerifyCode() {
 		errorMsg := "验证码错误或已过期"
 		resp.SetMessage(&errorMsg)
@@ -156,7 +156,7 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (re
 	}
 
 	// 5. 存储token
-	if err := s.redis.Set(tokenPrefix+token, existingUser.ID, tokenExpiration).Err(); err != nil {
+	if err := s.redis.Set(ctx, tokenPrefix+token, existingUser.ID, tokenExpiration).Err(); err != nil {
 		errorMsg := "系统错误"
 		resp.SetMessage(&errorMsg)
 		resp.SetSuccess(false)
@@ -279,5 +279,5 @@ func CheckPhoneExists(db *gorm.DB, phone string) (bool, error) {
 // 存入redis
 func (s *UserServiceImpl) saveCodeToRedis(phone, code string) error {
 	key := verifyCodePrefix + phone
-	return s.redis.Set(key, code, codeExpiration).Err()
+	return s.redis.Set(context.Background(), key, code, codeExpiration).Err()
 }
