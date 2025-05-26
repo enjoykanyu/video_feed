@@ -74,7 +74,7 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 	// 4. 创建用户
 	newUser := model.User{
 		Phone:    req.GetPhone(),
-		Nickname: fmt.Sprintf("用户%s", req.GetPhone()[:4]),
+		Username: fmt.Sprintf("用户%s", req.GetPhone()[:4]),
 	}
 	if err := s.db.Create(&newUser).Error; err != nil {
 		errorMsg := "注册失败"
@@ -197,7 +197,7 @@ func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfo
 	// 3. 构造UserInfo结构体
 	userInfo := &user.UserInfo{
 		UserId:   userModel.ID,
-		Username: userModel.Nickname,
+		Username: userModel.Username,
 		Avatar:   &userModel.Avatar,
 	}
 
