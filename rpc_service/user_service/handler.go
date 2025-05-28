@@ -116,7 +116,6 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReques
 	return resp, nil
 }
 
-// Login implements the UserServiceImpl interface.
 func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (resp *user.LoginResponse, err error) {
 	resp = user.NewLoginResponse()
 	// 1. 校验参数异常
@@ -126,7 +125,6 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (re
 		resp.SetMessage(&errorMsg)               // 传递指针
 		resp.SetSuccess(true)
 	}
-	//2，验证码校验
 	// 2. 验证码校验
 	storedCode, err := s.redis.Get(ctx, verifyCodePrefix+req.GetPhone()).Result()
 	if err != nil || storedCode != req.GetVerifyCode() {
@@ -214,12 +212,24 @@ func (s *UserServiceImpl) SendVerifyCode(ctx context.Context, req *user.SendVeri
 	// 1. 校验参数异常
 	if phone == "" {
 
-		errorMsg := "Invalid request parameters" // 声明字符串变量
-		resp.SetMessage(&errorMsg)               // 传递指针
+		errorMsg := "参数为空错误"       // 声明字符串变量
+		resp.SetMessage(&errorMsg) // 传递指针
 		resp.SetSuccess(false)
 	}
 	//2,查询db看用户手机号是否存在
-	CheckPhoneExists(s.db, phone)
+	exists, err := CheckPhoneExists(s.db, phone)
+	if err != nil {
+		errorMsg := "查询手机号错误"
+		resp.SetMessage(&errorMsg)
+		resp.SetSuccess(false)
+		return resp, nil
+	}
+	if !exists {
+		errorMsg := "手机号不存在"
+		resp.SetMessage(&errorMsg)
+		resp.SetSuccess(false)
+		return resp, nil
+	}
 	//3, 生成验证码
 	code, _ := generateCaptcha()
 
