@@ -6,6 +6,7 @@ import (
 
 type User struct {
 	gorm.Model
+	ID       int64  `gorm:"primaryKey"` // 替代uint
 	Phone    string `gorm:"unique"`
 	Password string
 	Username string
