@@ -37,8 +37,9 @@ func main() {
 	userGroup := douyin.Group("/user")
 	// 注册用户注册接口，POST 方法对应创建操作
 	// 处理函数指向 user 包的 Handler 方法:ml-citation{ref="3" data="citationList"}
-	userGroup.POST("/register/", user.Handler)
-
+	userGroup.POST("/register/", user.Register)
+	userGroup.POST("/login/", user.Login)
+	userGroup.POST("/code/", user.Code)
 	// 启动 HTTP 服务，若失败则记录错误日志
 	// Run() 会阻塞直到服务终止:ml-citation{ref="6" data="citationList"}
 	if err := hz.Run(); err != nil {
