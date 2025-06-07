@@ -72,7 +72,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 }
 
 func Login(ctx context.Context, c *app.RequestContext) {
-	req := user.NewRegisterRequest()
+	req := user.NewLoginRequest()
 	// var RegisterRequest struct {
 	// 	Phone      string `thrift:"phone,1,required" frugal:"1,required,string" json:"phone"`
 	// 	VerifyCode string `thrift:"verifyCode,2,required" frugal:"2,required,string" json:"verifyCode"`
@@ -91,7 +91,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 	log.Printf("请求参数: %v\n", req.VerifyCode) // 打印请求参数
 	log.Printf("参数类型: %T\n", req)            // 打印请求参数
 	// 调用用户服务RPC接口，超时3秒
-	resp, err := userClient.Register(
+	resp, err := userClient.Login(
 		ctx,
 		req,
 		callopt.WithRPCTimeout(3*time.Second),
@@ -102,26 +102,13 @@ func Login(ctx context.Context, c *app.RequestContext) {
 	c.String(200, resp.String()) // 返回RPC响应内容
 }
 func Code(ctx context.Context, c *app.RequestContext) {
-	req := user.NewRegisterRequest()
-	// var RegisterRequest struct {
-	// 	Phone      string `thrift:"phone,1,required" frugal:"1,required,string" json:"phone"`
-	// 	VerifyCode string `thrift:"verifyCode,2,required" frugal:"2,required,string" json:"verifyCode"`
-	// }
-
-	// req := NewRegisterRequest()
-
-	if err := c.BindAndValidate(req); err != nil {
-		c.JSON(http.StatusOK, utils.H{
-			"message": err.Error(),
-			"code":    http.StatusBadRequest,
-		})
-		return
-	}
-	log.Printf("请求参数: %v\n", req.Phone)      // 打印请求参数
-	log.Printf("请求参数: %v\n", req.VerifyCode) // 打印请求参数
-	log.Printf("参数类型: %T\n", req)            // 打印请求参数
+	req := user.NewSendVerifyCodeRequest()
+	phone := c.Query("phone")
+	req.Phone = phone
+	log.Printf("请求参数: %v\n", phone) // 打印请求参数
+	log.Printf("参数类型: %T\n", req)   // 打印请求参数
 	// 调用用户服务RPC接口，超时3秒
-	resp, err := userClient.Register(
+	resp, err := userClient.SendVerifyCode(
 		ctx,
 		req,
 		callopt.WithRPCTimeout(3*time.Second),
