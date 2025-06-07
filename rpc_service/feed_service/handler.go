@@ -2,38 +2,40 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"github.com/cloudwego/kitex/pkg/klog"
+	"github.com/go-redis/redis/v8"
+	"gorm.io/gorm"
 	"time"
-	"video_douyin/dal"
+	"video_douyin/dal/model"
 	"video_douyin/kitex_gen/feed"
 	"video_douyin/pkg/minio"
-	"video_douyin/pkg/redis"
-
-	"github.com/cloudwego/kitex/pkg/klog"
 )
 
-type FeedServiceImpl struct{}
+type FeedServiceImpl struct {
+	db    *gorm.DB
+	redis *redis.Client
+}
 
 // GetFeed 获取视频Feed流
 func (s *FeedServiceImpl) GetFeed(ctx context.Context, req *feed.FeedRequest) (*feed.FeedResponse, error) {
 	// 尝试从Redis缓存获取
 	if req.LastTime == 0 {
-		hotVideos, err := redis.GetHotVideos(ctx)
-		if err == nil {
-			var videos []*feed.Video
-			if err := json.Unmarshal([]byte(hotVideos), &videos); err == nil {
-				return &feed.FeedResponse{
-					Videos:   videos,
-					NextTime: time.Now().Unix(),
-					HasMore:  true,
-				}, nil
-			}
-		}
+		//hotVideos, err := redis.GetHotVideos(ctx)
+		//if err == nil {
+		//	var videos []*feed.Video
+		//	if err := json.Unmarshal([]byte(hotVideos), &videos); err == nil {
+		//		return &feed.FeedResponse{
+		//			Videos:   videos,
+		//			NextTime: time.Now().Unix(),
+		//			HasMore:  true,
+		//		}, nil
+		//	}
+		//}
 	}
 
 	// 从数据库获取视频列表
-	var videos []dal.Video
-	err := dal.DB.Where("created_at < ?", time.Unix(req.LastTime, 0)).
+	var videos []model.Video
+	err := s.db.Where("created_at < ?", time.Unix(req.LastTime, 0)).
 		Order("created_at desc").
 		Limit(int(req.Count)).
 		Find(&videos).Error
@@ -67,8 +69,8 @@ func (s *FeedServiceImpl) GetFeed(ctx context.Context, req *feed.FeedRequest) (*
 // GetVideoChunk 获取视频分片
 func (s *FeedServiceImpl) GetVideoChunk(ctx context.Context, req *feed.ChunkRequest) (*feed.ChunkResponse, error) {
 	// 获取视频信息
-	var video dal.Video
-	if err := dal.DB.First(&video, req.VideoId).Error; err != nil {
+	var video model.Video
+	if err := s.db.First(&video, req.VideoId).Error; err != nil {
 		return nil, err
 	}
 
@@ -90,8 +92,8 @@ func (s *FeedServiceImpl) GetVideoChunk(ctx context.Context, req *feed.ChunkRequ
 // PreloadVideo 预加载视频
 func (s *FeedServiceImpl) PreloadVideo(ctx context.Context, req *feed.PreloadRequest) (*feed.PreloadResponse, error) {
 	// 获取视频信息
-	var video dal.Video
-	if err := dal.DB.First(&video, req.VideoId).Error; err != nil {
+	var video model.Video
+	if err := s.db.First(&video, req.VideoId).Error; err != nil {
 		return nil, err
 	}
 
