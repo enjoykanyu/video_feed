@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 	"video_douyin/dal"
+	"video_douyin/dal/model"
 	"video_douyin/kitex_gen/upload"
 	"video_douyin/pkg/minio"
 )
@@ -42,7 +43,7 @@ func (s *UploadServiceImpl) UploadVideo(ctx context.Context, req *upload.UploadR
 		dal.DB.FirstOrCreate(&tag, dal.Tag{Name: tagName})
 
 		// 创建视频标签关联
-		videoTag := dal.VideoTag{
+		videoTag := model.VideoTag{
 			VideoID: video.ID,
 			TagID:   tag.ID,
 		}
@@ -70,14 +71,14 @@ func (s *UploadServiceImpl) UpdateVideoInfo(ctx context.Context, req *upload.Upd
 
 	// 更新标签
 	// 先删除旧的标签关联
-	dal.DB.Where("video_id = ?", req.VideoId).Delete(&dal.VideoTag{})
+	dal.DB.Where("video_id = ?", req.VideoId).Delete(&model.VideoTag{})
 
 	// 添加新的标签关联
 	for _, tagName := range req.Tags {
 		var tag dal.Tag
 		dal.DB.FirstOrCreate(&tag, dal.Tag{Name: tagName})
 
-		videoTag := dal.VideoTag{
+		videoTag := model.VideoTag{
 			VideoID: req.VideoId,
 			TagID:   tag.ID,
 		}
