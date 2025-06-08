@@ -87,9 +87,9 @@ func Login(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	}
-	log.Printf("请求参数: %v\n", req.Phone)      // 打印请求参数
-	log.Printf("请求参数: %v\n", req.VerifyCode) // 打印请求参数
-	log.Printf("参数类型: %T\n", req)            // 打印请求参数
+	log.Printf("请求参数: %v\n", req.Phone)         // 打印请求参数
+	log.Printf("请求参数验证码: %v\n", req.VerifyCode) // 打印请求参数
+	log.Printf("参数类型: %T\n", req)               // 打印请求参数
 	// 调用用户服务RPC接口，超时3秒
 	resp, err := userClient.Login(
 		ctx,
@@ -99,7 +99,8 @@ func Login(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		log.Fatal(err) // RPC调用失败记录日志
 	}
-	c.String(200, resp.String()) // 返回RPC响应内容
+	//c.String(200, resp.String()) // 返回RPC响应内容
+	c.JSON(200, resp)
 }
 func Code(ctx context.Context, c *app.RequestContext) {
 	req := user.NewSendVerifyCodeRequest()
