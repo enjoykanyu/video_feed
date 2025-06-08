@@ -123,7 +123,7 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (re
 
 		errorMsg := "Invalid request parameters" // 声明字符串变量
 		resp.SetMessage(&errorMsg)               // 传递指针
-		resp.SetSuccess(true)
+		resp.SetSuccess(false)
 	}
 	// 2. 验证码校验
 	storedCode, err := s.redis.Get(ctx, verifyCodePrefix+req.GetPhone()).Result()
@@ -161,7 +161,7 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginRequest) (re
 	successMsg := "登录成功"
 	resp.SetMessage(&successMsg)
 	resp.SetSuccess(true)
-	// resp.SetToken(token) 需加上返回给前端
+	resp.SetToken(&token) //需加上返回给前端
 	return resp, nil
 }
 
