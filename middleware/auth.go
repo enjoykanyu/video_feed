@@ -3,7 +3,16 @@ package middleware
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/go-redis/redis/v8"
 	"strings"
+	"time"
+)
+
+const (
+	verifyCodePrefix = "verify_code:"
+	tokenPrefix      = "user_token:"
+	codeExpiration   = 5 * time.Minute
+	tokenExpiration  = 24 * time.Hour
 )
 
 func AuthMiddleware() app.HandlerFunc {
@@ -21,12 +30,21 @@ func AuthMiddleware() app.HandlerFunc {
 			c.AbortWithStatusJSON(401, map[string]string{"error": "未授权访问"})
 			return
 		}
+		ttl, err := redis.Client{}.TTL(ctx, tokenPrefix+string(token)).Result()
+		if err != nil {
+			return
+		}
 
-		// 验证Token有效性（需实现verifyToken函数）
-		//if !verifyToken(token) {
-		//	c.AbortWithStatusJSON(401, map[string]string{"error": "无效Token"})
-		//	return
-		//}
+		// 已过期直接返回错误
+		if ttl < 0 {
+			return
+		}
+		err = redis.Client{}.Expire(ctx, string(token), tokenExpiration).Err()
+
+		if err != nil {
+			c.AbortWithStatusJSON(401, map[string]string{"error": "无效Token"})
+			return
+		}
 		c.Next(ctx)
 	}
 }
