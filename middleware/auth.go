@@ -9,10 +9,8 @@ import (
 )
 
 const (
-	verifyCodePrefix = "verify_code:"
-	tokenPrefix      = "user_token:"
-	codeExpiration   = 5 * time.Minute
-	tokenExpiration  = 24 * time.Hour
+	tokenPrefix     = "user_token:"
+	tokenExpiration = 24 * time.Hour
 )
 
 func AuthMiddleware() app.HandlerFunc {
