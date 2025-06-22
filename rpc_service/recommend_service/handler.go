@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"video_douyin/pkg/db"
+
 	//"github.com/cloudwego/kitex/pkg/klog"
 	"gorm.io/gorm"
 	//"sort"
@@ -47,36 +50,38 @@ func (s *RecommendServiceImpl) GetFeed(ctx context.Context, req *recommend.GetFe
 
 // getUserInterests 获取用户兴趣标签
 func (s *RecommendServiceImpl) getUserInterests(ctx context.Context, userID int64) ([]*recommend.UserInterest, error) {
-	// 先从Redis缓存获取
-	//cacheKey := "user:interests:" + string(userID)
-	//if interests, err := redis.RedisClient.Get(ctx, cacheKey).Result(); err == nil {
-	//	var result []*recommend.UserInterest
-	//	if err := json.Unmarshal([]byte(interests), &result); err == nil {
-	//		return result, nil
-	//	}
-	//}
-	//
-	//// 从数据库获取
-	//var interests []model.UserInterest
-	//if err := dal.DB.Where("user_id = ?", userID).Find(&interests).Error; err != nil {
-	//	return nil, err
-	//}
-	//
-	//// 转换为响应格式
-	//result := make([]*recommend.UserInterest, len(interests))
-	//for i, interest := range interests {
-	//	result[i] = &recommend.UserInterest{
-	//		UserId:    interest.UserID,
-	//		TagName:   interest.TagName,
-	//		Weight:    interest.Weight,
-	//		UpdatedAt: interest.UpdatedAt.Unix(),
-	//	}
-	//}
-	//
-	//// 更新缓存
-	//if data, err := json.Marshal(result); err == nil {
-	//	redis.RedisClient.Set(ctx, cacheKey, data, 24*time.Hour)
-	//}
+	//先从Redis缓存获取
+	cacheKey := "user:interests:" + string(userID)
+	interests_cache, err := redis.Client{}.Get(ctx, cacheKey).Result()
+	if err == nil {
+		var result []*recommend.UserInterest
+		if err := json.Unmarshal([]byte(interests_cache), &result); err == nil {
+			return result, nil
+		}
+	}
+
+	// 从数据库获取
+	var interests []model.UserInterest
+	err = db.DB.Where("user_id = ?", userID).Find(&interests_cache).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换为响应格式
+	result := make([]*recommend.UserInterest, len(interests))
+	for i, interest := range interests {
+		result[i] = &recommend.UserInterest{
+			UserId:    interest.UserID,
+			TagName:   interest.TagName,
+			Weight:    interest.Weight,
+			UpdatedAt: interest.UpdatedAt.Unix(),
+		}
+	}
+
+	// 更新缓存
+	if data, err := json.Marshal(result); err == nil {
+		redis.Client{}.Set(ctx, cacheKey, data, 24*time.Hour)
+	}
 
 	return nil, nil
 }
