@@ -20,7 +20,8 @@ type FeedServiceImpl struct {
 func (s *FeedServiceImpl) GetFeed(ctx context.Context, req *feed.FeedRequest) (*feed.FeedResponse, error) {
 	// 尝试从Redis缓存获取
 	if req.LastTime == 0 {
-		//hotVideos, err := redis.GetHotVideos(ctx)
+		//GetHotVideos
+		//hotVideos, err := redis.Client{}.Get(ctx,"hot_video")
 		//if err == nil {
 		//	var videos []*feed.Video
 		//	if err := json.Unmarshal([]byte(hotVideos), &videos); err == nil {

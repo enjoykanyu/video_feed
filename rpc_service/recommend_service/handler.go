@@ -88,20 +88,19 @@ func (s *RecommendServiceImpl) getUserInterests(ctx context.Context, userID int6
 
 // getCandidateVideos 获取候选视频列表
 func (s *RecommendServiceImpl) getCandidateVideos(ctx context.Context, userID int64, lastTime int64, count int32) ([]*model.Video, error) {
-	//var videos []dal.Video
-	//
-	//// 基于用户兴趣标签获取相关视频
-	//if err := dal.DB.Joins("JOIN video_tags ON videos.id = video_tags.video_id").
-	//	Joins("JOIN user_interests ON video_tags.tag_name = user_interests.tag_name").
-	//	Where("user_interests.user_id = ? AND videos.created_at < ?", userID, time.Unix(lastTime, 0)).
-	//	Order("video_tags.weight * user_interests.weight DESC").
-	//	Limit(int(count)).
-	//	Find(&videos).Error; err != nil {
-	//	return nil, err
-	//}
-	//
-	//return &videos, nil
-	return nil, nil
+	var videos []dal.Video
+
+	// 基于用户兴趣标签获取相关视频 这里得重新封装个函数
+	if err := dal.DB.Joins("JOIN video_tags ON videos.id = video_tags.video_id").
+		Joins("JOIN user_interests ON video_tags.tag_name = user_interests.tag_name").
+		Where("user_interests.user_id = ? AND videos.created_at < ?", userID, time.Unix(lastTime, 0)).
+		Order("video_tags.weight * user_interests.weight DESC").
+		Limit(int(count)).
+		Find(&videos).Error; err != nil {
+		return nil, err
+	}
+
+	return &videos, nil
 }
 
 // calculateVideoScores 计算视频得分
