@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"sort"
 	"video_douyin/pkg/db"
 
 	//"github.com/cloudwego/kitex/pkg/klog"
@@ -103,46 +104,45 @@ func (s *RecommendServiceImpl) getCandidateVideos(ctx context.Context, userID in
 	return &videos, nil
 }
 
-// calculateVideoScores 计算视频得分
+// calculateVideoScores 计算视频得分便于归类推给用户
 func (s *RecommendServiceImpl) calculateVideoScores(videos []*model.Video, userInterests []*recommend.UserInterest) []*recommend.Video {
-	//scoredVideos := make([]*recommend.Video, len(videos))
-	//
-	//for i, video := range videos {
-	//	// 获取视频标签
-	//	var videoTags []dal.VideoTag
-	//	dal.DB.Where("video_id = ?", video.ID).Find(&videoTags)
-	//
-	//	// 计算相关性得分
-	//	relevanceScore := s.calculateRelevanceScore(videoTags, userInterests)
-	//
-	//	// 获取视频热度得分
-	//	var videoScore dal.VideoScore
-	//	dal.DB.Where("video_id = ?", video.ID).First(&videoScore)
-	//
-	//	// 综合得分 = 相关性得分 * 0.6 + 热度得分 * 0.4
-	//	finalScore := relevanceScore*0.6 + videoScore.HotScore*0.4
-	//
-	//	scoredVideos[i] = &recommend.Video{
-	//		Id:          video.ID,
-	//		UserId:      video.UserID,
-	//		Title:       video.Title,
-	//		Description: video.Description,
-	//		CoverUrl:    video.CoverURL,
-	//		VideoUrl:    video.VideoURL,
-	//		Status:      video.Status,
-	//		CreatedAt:   video.CreatedAt.Unix(),
-	//		UpdatedAt:   video.UpdatedAt.Unix(),
-	//		Score:       finalScore,
-	//	}
-	//}
-	//
-	//// 按得分排序
-	//sort.Slice(scoredVideos, func(i, j int) bool {
-	//	return scoredVideos[i].Score > scoredVideos[j].Score
-	//})
-	//
-	//return scoredVideos
-	return nil
+	scoredVideos := make([]*recommend.Video, len(videos))
+
+	for i, video := range videos {
+		// 获取视频标签
+		var videoTags []dal.VideoTag
+		dal.DB.Where("video_id = ?", video.ID).Find(&videoTags)
+
+		// 计算相关性得分
+		relevanceScore := s.calculateRelevanceScore(videoTags, userInterests)
+
+		// 获取视频热度得分
+		var videoScore dal.VideoScore
+		dal.DB.Where("video_id = ?", video.ID).First(&videoScore)
+
+		// 综合得分 = 相关性得分 * 0.6 + 热度得分 * 0.4
+		finalScore := relevanceScore*0.6 + videoScore.HotScore*0.4
+
+		scoredVideos[i] = &recommend.Video{
+			Id:          video.ID,
+			UserId:      video.UserID,
+			Title:       video.Title,
+			Description: video.Description,
+			CoverUrl:    video.CoverURL,
+			VideoUrl:    video.VideoURL,
+			Status:      video.Status,
+			CreatedAt:   video.CreatedAt.Unix(),
+			UpdatedAt:   video.UpdatedAt.Unix(),
+			Score:       finalScore,
+		}
+	}
+
+	// 按得分排序
+	sort.Slice(scoredVideos, func(i, j int) bool {
+		return scoredVideos[i].Score > scoredVideos[j].Score
+	})
+
+	return scoredVideos
 }
 
 // calculateRelevanceScore 计算相关性得分
