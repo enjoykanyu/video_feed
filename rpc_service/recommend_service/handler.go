@@ -149,14 +149,14 @@ func (s *RecommendServiceImpl) calculateVideoScores(videos []*model.Video, userI
 func (s *RecommendServiceImpl) calculateRelevanceScore(videoTags []model.VideoTag, userInterests []*recommend.UserInterest) float64 {
 	var score float64
 
-	//// 计算标签匹配度
-	//for _, videoTag := range videoTags {
-	//	for _, userInterest := range userInterests {
-	//		if videoTag.TagName == userInterest.TagName {
-	//			score += videoTag.Weight * userInterest.Weight
-	//		}
-	//	}
-	//}
+	// 计算标签匹配度
+	for _, videoTag := range videoTags {
+		for _, userInterest := range userInterests {
+			if videoTag.TagName == userInterest.TagName {
+				score += videoTag.Weight * userInterest.Weight
+			}
+		}
+	}
 
 	return score
 }
