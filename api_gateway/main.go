@@ -5,28 +5,11 @@ import (
 	"video_douyin/middleware"
 
 	"api_gateway/user"
-	// "video_douyin/kitex_gen/user"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
-// var (
-// 	cli userservice.Client
-// )
-
 func main() {
-	// // 初始化MySQL
-	// if err := db.InitMySQL("root:901project@tcp(127.0.0.1:3306)/kanyuServer?charset=utf8mb4&parseTime=True&loc=Local"); err != nil {
-	// 	log.Fatalf("MySQL初始化失败: %v", err)
-	// }
-	// // c, err := userservice.NewClient("douyin.video.user", client.WithHostPorts("0.0.0.0:8888"))
-	// // if err != nil {
-	// // 	log.Fatal(err)
-	// // }
-	// // cli = c
-
-	// // 初始化Redis
-	// db.InitRedis("127.0.0.1:6379", "", 0)
 	// 初始化 Hertz 服务器实例，监听本地 8889 端口
 	// WithHostPorts 配置项指定服务监听地址:ml-citation{ref="6,7" data="citationList"}
 	hz := server.New(server.WithHostPorts("localhost:8889"))
@@ -48,13 +31,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
-// func Handler(ctx context.Context, c *app.RequestContext) {
-// req := user.NewGetUserInfoRequest()
-// resp, err := cli.GetUserInfo(context.Background(), req, callopt.WithRPCTimeout(3*time.Second))
-// if err != nil {
-// 	log.Fatal(err)
-// }
-
-// c.String(200, resp.String())
-// }
