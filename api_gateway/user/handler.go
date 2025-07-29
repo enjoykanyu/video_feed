@@ -30,15 +30,6 @@ func init() {
 	userClient = c
 }
 
-// type RegisterRequest struct {
-// 	Phone      string `thrift:"phone,1,required" frugal:"1,required,string" json:"phone"`
-// 	VerifyCode string `thrift:"verifyCode,2,required" frugal:"2,required,string" json:"verifyCode"`
-// }
-
-// func NewRegisterRequest() *RegisterRequest {
-// 	return &RegisterRequest{}
-// }
-
 // Handler 处理用户注册HTTP请求
 func Register(ctx context.Context, c *app.RequestContext) {
 	req := user.NewRegisterRequest()
