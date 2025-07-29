@@ -33,12 +33,6 @@ func init() {
 // Handler 处理用户注册HTTP请求
 func Register(ctx context.Context, c *app.RequestContext) {
 	req := user.NewRegisterRequest()
-	// var RegisterRequest struct {
-	// 	Phone      string `thrift:"phone,1,required" frugal:"1,required,string" json:"phone"`
-	// 	VerifyCode string `thrift:"verifyCode,2,required" frugal:"2,required,string" json:"verifyCode"`
-	// }
-
-	// req := NewRegisterRequest()
 
 	if err := c.BindAndValidate(req); err != nil {
 		c.JSON(http.StatusOK, utils.H{
