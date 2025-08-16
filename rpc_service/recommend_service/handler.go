@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/cloudwego/kitex/pkg/klog"
 	"sort"
 	"video_douyin/pkg/db"
 
@@ -164,33 +165,33 @@ func (s *RecommendServiceImpl) calculateRelevanceScore(videoTags []model.VideoTa
 // deduplicateVideos 视频去重
 func (s *RecommendServiceImpl) deduplicateVideos(videos []*recommend.Video, count int32) []*recommend.Video {
 	// 使用Redis记录已推荐视频
-	//ctx := context.Background()
-	//recommendedKey := "user:recommended:" + string(videos[0].UserId)
-	//
-	//// 获取已推荐视频列表
-	//recommended, _ := redis.RedisClient.SMembers(ctx, recommendedKey).Result()
-	//recommendedMap := make(map[string]bool)
-	//for _, v := range recommended {
-	//	recommendedMap[v] = true
-	//}
-	//
-	//// 过滤并返回未推荐视频
-	//result := make([]*recommend.Video, 0, count)
-	//for _, video := range videos {
-	//	if len(result) >= int(count) {
-	//		break
-	//	}
-	//
-	//	videoID := string(video.Id)
-	//	if !recommendedMap[videoID] {
-	//		result = append(result, video)
-	//		// 记录已推荐视频
-	//		redis.RedisClient.SAdd(ctx, recommendedKey, videoID)
-	//	}
-	//}
-	//
-	//// 设置过期时间（24小时）
-	//redis.RedisClient.Expire(ctx, recommendedKey, 24*time.Hour)
+	ctx := context.Background()
+	recommendedKey := "user:recommended:" + string(videos[0].UserId)
+
+	// 获取已推荐视频列表
+	recommended, _ := redis.RedisClient.SMembers(ctx, recommendedKey).Result()
+	recommendedMap := make(map[string]bool)
+	for _, v := range recommended {
+		recommendedMap[v] = true
+	}
+
+	// 过滤并返回未推荐视频
+	result := make([]*recommend.Video, 0, count)
+	for _, video := range videos {
+		if len(result) >= int(count) {
+			break
+		}
+
+		videoID := string(video.Id)
+		if !recommendedMap[videoID] {
+			result = append(result, video)
+			// 记录已推荐视频
+			redis.RedisClient.SAdd(ctx, recommendedKey, videoID)
+		}
+	}
+
+	// 设置过期时间（24小时）
+	redis.RedisClient.Expire(ctx, recommendedKey, 24*time.Hour)
 
 	return nil
 }
