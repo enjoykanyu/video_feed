@@ -199,45 +199,45 @@ func (s *RecommendServiceImpl) deduplicateVideos(videos []*recommend.Video, coun
 // UpdateUserProfile 更新用户画像
 func (s *RecommendServiceImpl) UpdateUserProfile(ctx context.Context, req *recommend.UpdateUserProfileRequest) (*recommend.UpdateUserProfileResponse, error) {
 	// 1. 更新观看历史
-	//watchHistory := dal.WatchHistory{
-	//	UserID:        req.UserId,
-	//	VideoID:       req.VideoId,
-	//	WatchDuration: req.WatchDuration,
-	//	CreatedAt:     time.Now(),
-	//}
-	//if err := dal.DB.Create(&watchHistory).Error; err != nil {
-	//	return nil, err
-	//}
-	//
-	//// 2. 更新用户画像
-	//var profile dal.UserProfile
-	//dal.DB.FirstOrCreate(&profile, dal.UserProfile{UserID: req.UserId})
-	//
-	//profile.LastActiveAt = time.Now()
-	//profile.TotalWatch += int64(req.WatchDuration)
-	//if req.IsLike {
-	//	profile.TotalLikes++
-	//}
-	//if req.IsComment {
-	//	profile.TotalComments++
-	//}
-	//if req.IsShare {
-	//	profile.TotalShares++
-	//}
-	//
-	//if err := dal.DB.Save(&profile).Error; err != nil {
-	//	return nil, err
-	//}
-	//
-	//// 3. 更新用户兴趣标签
-	//if err := s.updateUserInterests(ctx, req); err != nil {
-	//	return nil, err
-	//}
-	//
-	//return &recommend.UpdateUserProfileResponse{
-	//	Success: true,
-	//	Message: "User profile updated successfully",
-	//}, nil
+	watchHistory := dal.WatchHistory{
+		UserID:        req.UserId,
+		VideoID:       req.VideoId,
+		WatchDuration: req.WatchDuration,
+		CreatedAt:     time.Now(),
+	}
+	if err := dal.DB.Create(&watchHistory).Error; err != nil {
+		return nil, err
+	}
+
+	// 2. 更新用户画像
+	var profile dal.UserProfile
+	dal.DB.FirstOrCreate(&profile, dal.UserProfile{UserID: req.UserId})
+
+	profile.LastActiveAt = time.Now()
+	profile.TotalWatch += int64(req.WatchDuration)
+	if req.IsLike {
+		profile.TotalLikes++
+	}
+	if req.IsComment {
+		profile.TotalComments++
+	}
+	if req.IsShare {
+		profile.TotalShares++
+	}
+
+	if err := dal.DB.Save(&profile).Error; err != nil {
+		return nil, err
+	}
+
+	// 3. 更新用户兴趣标签
+	if err := s.updateUserInterests(ctx, req); err != nil {
+		return nil, err
+	}
+
+	return &recommend.UpdateUserProfileResponse{
+		Success: true,
+		Message: "User profile updated successfully",
+	}, nil
 	return nil, nil
 }
 
