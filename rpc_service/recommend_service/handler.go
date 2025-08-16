@@ -244,34 +244,34 @@ func (s *RecommendServiceImpl) UpdateUserProfile(ctx context.Context, req *recom
 // updateUserInterests 更新用户兴趣标签
 func (s *RecommendServiceImpl) updateUserInterests(ctx context.Context, req *recommend.UpdateUserProfileRequest) error {
 	// 获取视频标签
-	//var videoTags []dal.VideoTag
-	//if err := dal.DB.Where("video_id = ?", req.VideoId).Find(&videoTags).Error; err != nil {
-	//	return err
-	//}
-	//
-	//// 计算兴趣权重增量
-	//weightIncrement := s.calculateInterestWeight(req)
-	//
-	//// 更新用户兴趣标签
-	//for _, tag := range videoTags {
-	//	var interest dal.UserInterest
-	//	result := dal.DB.FirstOrCreate(&interest, dal.UserInterest{
-	//		UserID:  req.UserId,
-	//		TagName: tag.TagName,
-	//	})
-	//
-	//	if result.Error != nil {
-	//		continue
-	//	}
-	//
-	//	// 使用指数衰减更新权重
-	//	interest.Weight = interest.Weight*0.9 + weightIncrement*tag.Weight
-	//	interest.UpdatedAt = time.Now()
-	//
-	//	if err := dal.DB.Save(&interest).Error; err != nil {
-	//		klog.Errorf("Failed to update user interest: %v", err)
-	//	}
-	//}
+	var videoTags []dal.VideoTag
+	if err := dal.DB.Where("video_id = ?", req.VideoId).Find(&videoTags).Error; err != nil {
+		return err
+	}
+
+	// 计算兴趣权重增量
+	weightIncrement := s.calculateInterestWeight(req)
+
+	// 更新用户兴趣标签
+	for _, tag := range videoTags {
+		var interest dal.UserInterest
+		result := dal.DB.FirstOrCreate(&interest, dal.UserInterest{
+			UserID:  req.UserId,
+			TagName: tag.TagName,
+		})
+
+		if result.Error != nil {
+			continue
+		}
+
+		// 使用指数衰减更新权重
+		interest.Weight = interest.Weight*0.9 + weightIncrement*tag.Weight
+		interest.UpdatedAt = time.Now()
+
+		if err := dal.DB.Save(&interest).Error; err != nil {
+			klog.Errorf("Failed to update user interest: %v", err)
+		}
+	}
 
 	return nil
 }
