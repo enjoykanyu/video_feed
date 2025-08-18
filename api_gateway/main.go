@@ -3,8 +3,13 @@ package main
 import (
 	"api_gateway/user"
 	"context"
-	"fmt"
+	"github.com/cloudwego/eino-ext/components/embedding/ollama"
+	"github.com/cloudwego/eino/components/embedding"
+
+	//"github.com/cloudwego/eino-ext/components/model/ollama"
 	"log"
+	"os"
+	"time"
 	"video_douyin/middleware"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
@@ -29,38 +34,79 @@ func main() {
 	// 启动 HTTP 服务，若失败则记录错误日志
 	// Run() 会阻塞直到服务终止:ml-citation{ref="6" data="citationList"}
 	//引入eino
-	ctx := context.Background()
-
-	// 使用模版创建messages
-	fmt.Printf("===create messages===\n")
-	messages := CreateMessagesFromTemplate()
-	fmt.Printf("messages: %+v\n\n", messages)
-
-	// 创建llm
-	fmt.Printf("===create llm===\n")
-	//cm := createOpenAIChatModel(ctx)
-	cm := CreateOllamaChatModel(ctx)
-	fmt.Printf("create llm success\n\n")
-
-	fmt.Printf("===llm generate===\n")
+	//ctx := context.Background()
+	//
+	//// 使用模版创建messages
+	//fmt.Printf("===create messages===\n")
+	//messages := CreateMessagesFromTemplate()
+	//fmt.Printf("messages: %+v\n\n", messages)
+	//
+	//// 创建llm
+	//fmt.Printf("===create llm===\n")
+	////cm := createOpenAIChatModel(ctx)
+	//cm := CreateOllamaChatModel(ctx)
+	//fmt.Printf("create llm success\n\n")
+	//
+	//fmt.Printf("===llm generate===\n")
+	////result := generate(ctx, cm, messages)
+	////log.Printf("result: %+v\n\n", result)
+	//
+	//fmt.Printf("===llm stream generate===\n")
+	////streamResult, err := cm.Stream(ctx, messages)
+	////if err != nil {
+	////
+	////}
+	////reportStream(streamResult)
+	////result, err := cm.Generate(ctx, messages)
+	////if err != nil {
+	////
+	////}
+	//log.Printf("===llm generate===\n")
 	//result := generate(ctx, cm, messages)
 	//log.Printf("result: %+v\n\n", result)
-
-	fmt.Printf("===llm stream generate===\n")
-	//streamResult, err := cm.Stream(ctx, messages)
-	//if err != nil {
-	//
-	//}
-	//reportStream(streamResult)
-	//result, err := cm.Generate(ctx, messages)
-	//if err != nil {
-	//
-	//}
-	log.Printf("===llm generate===\n")
-	result := generate(ctx, cm, messages)
-	log.Printf("result: %+v\n\n", result)
+	embeddingTest()
 	//启动hertz服务
 	if err := hz.Run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func embeddingTest() {
+	ctx := context.Background()
+
+	baseURL := os.Getenv("OLLAMA_BASE_URL")
+	if baseURL == "" {
+		baseURL = "http://localhost:11434" // 默认本地
+	}
+	model := os.Getenv("OLLAMA_EMBED_MODEL")
+	if model == "" {
+		model = "nomic-embed-text"
+	}
+
+	embedder, err := ollama.NewEmbedder(ctx, &ollama.EmbeddingConfig{
+		BaseURL: baseURL,
+		Model:   model,
+		Timeout: 10 * time.Second,
+	})
+	if err != nil {
+		log.Fatalf("NewEmbedder of ollama error: %v", err)
+		return
+	}
+
+	log.Printf("===== call Embedder directly =====")
+
+	vectors, err := embedder.EmbedStrings(ctx, []string{"hello", "how are you"})
+	if err != nil {
+		log.Fatalf("EmbedStrings of Ollama failed, err=%v", err)
+	}
+
+	log.Printf("vectors : %v", vectors)
+
+	// you can use WithModel to specify the model
+	vectors, err = embedder.EmbedStrings(ctx, []string{"hello", "how are you"}, embedding.WithModel(model))
+	if err != nil {
+		log.Fatalf("EmbedStrings of Ollama failed, err=%v", err)
+	}
+
+	log.Printf("vectors : %v", vectors)
 }
