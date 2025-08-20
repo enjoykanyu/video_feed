@@ -10,6 +10,7 @@ require (
 	github.com/cloudwego/eino-ext/components/embedding/ollama v0.0.0-20250818090953-a59b1be0df04
 	github.com/cloudwego/eino-ext/components/indexer/milvus v0.0.0-20250819065230-0fb5ad04c85f
 	github.com/cloudwego/eino-ext/components/model/ollama v0.1.0
+	github.com/cloudwego/eino-ext/components/retriever/milvus v0.0.0-20250820120452-cb4c949a1d4c
 	github.com/cloudwego/hertz v0.10.0
 	github.com/cloudwego/kitex v0.13.1
 	github.com/milvus-io/milvus-sdk-go/v2 v2.4.2

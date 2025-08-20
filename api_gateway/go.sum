@@ -45,6 +45,8 @@ github.com/cloudwego/eino-ext/components/indexer/milvus v0.0.0-20250819065230-0f
 github.com/cloudwego/eino-ext/components/indexer/milvus v0.0.0-20250819065230-0fb5ad04c85f/go.mod h1:Hdm2ql0T4+QcZoOVmgH9xovEJaTiQowKq3bc+lAXr50=
 github.com/cloudwego/eino-ext/components/model/ollama v0.1.0 h1:FW067iMfg3EZbUaZIo8v3i2ILBAZDzY23/9pbprvE0M=
 github.com/cloudwego/eino-ext/components/model/ollama v0.1.0/go.mod h1:+qA5kkUCM0mIrXGSNzxLcjxh6K1AghPNigtEyyMdkOc=
+github.com/cloudwego/eino-ext/components/retriever/milvus v0.0.0-20250820120452-cb4c949a1d4c h1:IxkdXuWT76ROX4zOJy/y4KuDLenEsqhlV9ukAVP2j10=
+github.com/cloudwego/eino-ext/components/retriever/milvus v0.0.0-20250820120452-cb4c949a1d4c/go.mod h1:PYh8yoOcuFYVfSZZ4vglaeRgaXrMz5D4uKioDZxEDA0=
 github.com/cloudwego/fastpb v0.0.5 h1:vYnBPsfbAtU5TVz5+f9UTlmSCixG9F9vRwaqE0mZPZU=
 github.com/cloudwego/fastpb v0.0.5/go.mod h1:Bho7aAKBUtT9RPD2cNVkTdx4yQumfSv3If7wYnm1izk=
 github.com/cloudwego/frugal v0.2.5 h1:zRICkWpBCQ6TY4QmRf+uINzcHbv7ogCHOM8h7ltPRzM=
