@@ -2,7 +2,6 @@ package main
 
 import (
 	"api_gateway/user"
-
 	//"github.com/cloudwego/eino-ext/components/model/ollama"
 	"log"
 	"video_douyin/middleware"
@@ -29,36 +28,7 @@ func main() {
 	// 启动 HTTP 服务，若失败则记录错误日志
 	// Run() 会阻塞直到服务终止:ml-citation{ref="6" data="citationList"}
 	//引入eino
-	//ctx := context.Background()
-	//
-	//// 使用模版创建messages
-	//fmt.Printf("===create messages===\n")
-	//messages := CreateMessagesFromTemplate()
-	//fmt.Printf("messages: %+v\n\n", messages)
-	//
-	//// 创建llm
-	//fmt.Printf("===create llm===\n")
-	////cm := createOpenAIChatModel(ctx)
-	//cm := CreateOllamaChatModel(ctx)
-	//fmt.Printf("create llm success\n\n")
-	//
-	//fmt.Printf("===llm generate===\n")
-	////result := generate(ctx, cm, messages)
-	////log.Printf("result: %+v\n\n", result)
-	//
-	//fmt.Printf("===llm stream generate===\n")
-	////streamResult, err := cm.Stream(ctx, messages)
-	////if err != nil {
-	////
-	////}
-	////reportStream(streamResult)
-	////result, err := cm.Generate(ctx, messages)
-	////if err != nil {
-	////
-	////}
-	//log.Printf("===llm generate===\n")
-	//result := generate(ctx, cm, messages)
-	//log.Printf("result: %+v\n\n", result)
+	einoClient()
 	embeddingTest()
 	//启动hertz服务
 	if err := hz.Run(); err != nil {
