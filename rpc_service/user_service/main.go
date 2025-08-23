@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// 初始化MySQL
-	if err := db.InitMySQL("root:901project@tcp(127.0.0.1:3306)/kanyuServer?charset=utf8mb4&parseTime=True&loc=Local"); err != nil {
+	if err := db.InitMySQL("root:901project@tcp(127.0.0.1:3306)/douyin?charset=utf8mb4&parseTime=True&loc=Local"); err != nil {
 		log.Fatalf("MySQL初始化失败: %v", err)
 	}
 
