@@ -8,12 +8,12 @@ import (
 
 type User struct {
 	gorm.Model
-	ID          uint64 `gorm:"primaryKey"`
+	ID          int64  `gorm:"primaryKey"`
 	Username    string `gorm:"size:32;uniqueIndex"`
 	Password    string `gorm:"size:255"`
-	Mobile      string `gorm:"size:20;unique"`
+	Phone       string `gorm:"size:20;unique"`
 	Email       string `gorm:"size:100;unique"`
-	AvatarURL   string `gorm:"size:255"`
+	AvatarUrl   string `gorm:"size:255"`
 	Signature   string `gorm:"size:255"`
 	Gender      int8   `gorm:"default:0"`
 	Birthday    *time.Time
