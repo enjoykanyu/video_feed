@@ -15,9 +15,11 @@ const (
 
 func AuthMiddleware() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
-		// 放行登录/注册接口
+		// 放行登录/注册接口/发送验证码
 		if strings.HasPrefix(c.FullPath(), "/douyin/user/register") ||
-			strings.HasPrefix(c.FullPath(), "/douyin/user/login") {
+			strings.HasPrefix(c.FullPath(), "/douyin/user/login") ||
+			strings.HasPrefix(c.FullPath(), "/douyin/user/code") ||
+			strings.HasPrefix(c.FullPath(), "/douyin/user/login/code") {
 			c.Next(ctx)
 			return
 		}
