@@ -10,9 +10,12 @@ import (
 )
 
 func main() {
-	// 初始化 Hertz 服务器实例，监听本地 8889 端口
+	//引入eino
+	//EinoClient()
+	//EmbeddingClient()
+	// 初始化 Hertz 服务器实例，监听本地 8081 端口
 	// WithHostPorts 配置项指定服务监听地址:ml-citation{ref="6,7" data="citationList"}
-	hz := server.New(server.WithHostPorts("localhost:8889"))
+	hz := server.New(server.WithHostPorts("localhost:8081"))
 	// 注册全局中间件
 	hz.Use(middleware.AuthMiddleware())
 	// 创建路由分组（符合 RESTful 风格）
@@ -27,9 +30,7 @@ func main() {
 	userGroup.POST("/code", user.Code)
 	// 启动 HTTP 服务，若失败则记录错误日志
 	// Run() 会阻塞直到服务终止:ml-citation{ref="6" data="citationList"}
-	//引入eino
-	einoClient()
-	embeddingTest()
+
 	//启动hertz服务
 	if err := hz.Run(); err != nil {
 		log.Fatal(err)
