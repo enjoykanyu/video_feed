@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -96,5 +98,10 @@ func Code(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		log.Fatal(err) // RPC调用失败记录日志
 	}
-	c.String(200, resp.String()) // 返回RPC响应内容
+	jsonData, err := json.Marshal(resp)
+	if err != nil {
+		fmt.Println("JSON编码错误:", err)
+		return
+	}
+	c.String(200, string(jsonData)) // 返回RPC响应内容 jsonData为[]byte c.String只接收字符串
 }

@@ -196,7 +196,7 @@ func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfo
 	userInfo := &user.UserInfo{
 		UserId:   userModel.ID,
 		Username: userModel.Username,
-		Avatar:   &userModel.Avatar,
+		Avatar:   &userModel.AvatarUrl,
 	}
 
 	// 4. 设置响应
@@ -216,7 +216,7 @@ func (s *UserServiceImpl) SendVerifyCode(ctx context.Context, req *user.SendVeri
 		resp.SetMessage(&errorMsg) // 传递指针
 		resp.SetSuccess(false)
 	}
-	//2,查询db看用户手机号是否存在
+	//2,查询db看用户手机号是否存在 没有找到则直接跳转到注册
 	exists, err := CheckPhoneExists(s.db, phone)
 	if err != nil {
 		errorMsg := "查询手机号错误"
