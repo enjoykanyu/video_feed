@@ -1,0 +1,36 @@
+CREATE TABLE `users` (  用户作者表
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+  `username` VARCHAR(32) NOT NULL COMMENT '用户名',
+  `password` VARCHAR(255) NOT NULL COMMENT '加密密码',
+  `mobile` VARCHAR(20) UNIQUE COMMENT '手机号',
+  `email` VARCHAR(100) UNIQUE COMMENT '邮箱',
+  `avatar_url` VARCHAR(255) COMMENT '头像URL',
+  `signature` VARCHAR(255) COMMENT '个性签名',
+  `gender` TINYINT DEFAULT 0 COMMENT '性别(0-未知 1-男 2-女)',
+  `birthday` DATE COMMENT '生日',
+  `is_creator` BOOLEAN DEFAULT FALSE COMMENT '是否创作者',
+  `creator_info` JSON COMMENT '创作者扩展信息',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `idx_username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `videos` ( 视频内容表
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `author_id` BIGINT UNSIGNED NOT NULL COMMENT '作者ID',
+  `title` VARCHAR(100) NOT NULL COMMENT '视频标题',
+  `play_url` VARCHAR(255) NOT NULL COMMENT '播放地址',
+  `cover_url` VARCHAR(255) NOT NULL COMMENT '封面地址',
+  `favorite_count` INT UNSIGNED DEFAULT 0 COMMENT '点赞数',
+  `comment_count` INT UNSIGNED DEFAULT 0 COMMENT '评论数',
+  `duration` INT UNSIGNED COMMENT '视频时长(秒)',
+  `resolution` VARCHAR(20) COMMENT '分辨率',
+  `tags` JSON COMMENT '视频标签',
+  `status` TINYINT DEFAULT 1 COMMENT '状态(0-下架 1-正常)',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_author` (`author_id`),
+  INDEX `idx_hot` (`favorite_count`, `comment_count`),
+  FULLTEXT INDEX `ft_title` (`title`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
