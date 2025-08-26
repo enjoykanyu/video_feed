@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func einoClient() {
+func EinoClient() {
 
 	ctx := context.Background()
 
