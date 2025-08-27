@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/cloudwego/eino-ext/components/embedding/ollama"
 	"github.com/cloudwego/eino/components/embedding"
 	"log"
@@ -8,7 +9,7 @@ import (
 	"time"
 )
 
-func embeddingTest() {
+func EmbeddingClient() {
 	ctx := context.Background()
 
 	baseURL := os.Getenv("OLLAMA_BASE_URL")
