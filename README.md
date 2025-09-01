@@ -1,2 +1,2 @@
 # video_feed
-仿抖音后端项目 go+hertz+kitex+redis+mysql+eino
+仿抖音后端项目 go+gin+grpc+redis+mysql+eino
