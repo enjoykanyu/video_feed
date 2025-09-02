@@ -1,2 +1,2 @@
-# video_feed
-仿抖音后端项目 go+gin+grpc+redis+mysql+eino
+# world_inactive
+万物互动项目 go+gin+grpc+redis+mysql+eino
