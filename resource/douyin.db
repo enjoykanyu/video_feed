@@ -34,3 +34,336 @@ CREATE TABLE `videos` ( 视频内容表
   INDEX `idx_hot` (`favorite_count`, `comment_count`),
   FULLTEXT INDEX `ft_title` (`title`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- 抖音推荐系统优化表结构
+-- 说明: 基于用户行为分析的推荐系统数据表
+
+-- 1. 用户兴趣标签表
+CREATE TABLE `user_interests` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+  `tag_name` VARCHAR(50) NOT NULL COMMENT '标签名称',
+  `weight` DECIMAL(10,4) NOT NULL DEFAULT 0.0000 COMMENT '兴趣权重(0-100)',
+  `decay_rate` DECIMAL(3,2) NOT NULL DEFAULT 0.90 COMMENT '衰减率(0.8-0.99)',
+  `last_update` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后更新时间',
+  `update_count` INT NOT NULL DEFAULT 0 COMMENT '更新次数',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_tag` (`user_id`, `tag_name`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_tag_name` (`tag_name`),
+  KEY `idx_last_update` (`last_update`),
+  KEY `idx_weight` (`weight`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户兴趣标签表';
+
+-- 2. 用户观看历史表
+CREATE TABLE `watch_histories` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+  `video_id` BIGINT UNSIGNED NOT NULL COMMENT '视频ID',
+  `watch_duration` INT NOT NULL COMMENT '观看时长(秒)',
+  `watch_progress` DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '观看进度百分比',
+  `is_completed` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '是否完整观看',
+  `device_type` VARCHAR(20) COMMENT '设备类型(mobile/web/app)',
+  `ip_address` VARCHAR(45) COMMENT 'IP地址',
+  `user_agent` VARCHAR(500) COMMENT '用户代理',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_video` (`user_id`, `video_id`),
+  KEY `idx_user_time` (`user_id`, `created_at`),
+  KEY `idx_video_time` (`video_id`, `created_at`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户观看历史表';
+
+-- 3. 视频标签表
+CREATE TABLE `video_tags` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `video_id` BIGINT UNSIGNED NOT NULL COMMENT '视频ID',
+  `tag_name` VARCHAR(50) NOT NULL COMMENT '标签名称',
+  `weight` DECIMAL(10,4) NOT NULL DEFAULT 1.0000 COMMENT '标签权重(0-100)',
+  `tag_type` VARCHAR(20) NOT NULL DEFAULT 'content' COMMENT '标签类型(content/category/emotion)',
+  `confidence` DECIMAL(5,2) NOT NULL DEFAULT 1.00 COMMENT '置信度(0-1)',
+  `source` VARCHAR(20) NOT NULL DEFAULT 'manual' COMMENT '标签来源(manual/ai/auto)',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_video_tag` (`video_id`, `tag_name`),
+  KEY `idx_tag_name` (`tag_name`),
+  KEY `idx_tag_type` (`tag_type`),
+  KEY `idx_source` (`source`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='视频标签表';
+
+-- 4. 用户画像表
+CREATE TABLE `user_profiles` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+  `last_active_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后活跃时间',
+  `total_watch` BIGINT NOT NULL DEFAULT 0 COMMENT '总观看时长(秒)',
+  `total_likes` BIGINT NOT NULL DEFAULT 0 COMMENT '总点赞数',
+  `total_comments` BIGINT NOT NULL DEFAULT 0 COMMENT '总评论数',
+  `total_shares` BIGINT NOT NULL DEFAULT 0 COMMENT '总分享数',
+  `total_favorites` BIGINT NOT NULL DEFAULT 0 COMMENT '总收藏数',
+  `avg_watch_duration` DECIMAL(8,2) NOT NULL DEFAULT 0.00 COMMENT '平均观看时长(秒)',
+  `watch_frequency` DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '观看频率(次/天)',
+  `preference_score` DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '偏好得分(0-100)',
+  `engagement_level` VARCHAR(20) NOT NULL DEFAULT 'low' COMMENT '参与度等级(low/medium/high)',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_id` (`user_id`),
+  KEY `idx_last_active` (`last_active_at`),
+  KEY `idx_engagement` (`engagement_level`),
+  KEY `idx_preference` (`preference_score`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户画像表';
+
+-- 5. 视频评分表
+CREATE TABLE `video_scores` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `video_id` BIGINT UNSIGNED NOT NULL COMMENT '视频ID',
+  `hot_score` DECIMAL(10,4) NOT NULL DEFAULT 0.0000 COMMENT '热度分数(0-100)',
+  `quality_score` DECIMAL(10,4) NOT NULL DEFAULT 0.0000 COMMENT '质量分数(0-100)',
+  `relevance_score` DECIMAL(10,4) NOT NULL DEFAULT 0.0000 COMMENT '相关性分数(0-100)',
+  `freshness_score` DECIMAL(10,4) NOT NULL DEFAULT 0.0000 COMMENT '新鲜度分数(0-100)',
+  `final_score` DECIMAL(10,4) NOT NULL DEFAULT 0.0000 COMMENT '最终综合分数(0-100)',
+  `score_version` INT NOT NULL DEFAULT 1 COMMENT '评分版本',
+  `last_calculated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后计算时间',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_video_id` (`video_id`),
+  KEY `idx_final_score` (`final_score`),
+  KEY `idx_hot_score` (`hot_score`),
+  KEY `idx_last_calculated` (`last_calculated`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='视频评分表';
+
+-- 6. 用户行为日志表
+CREATE TABLE `user_behavior_logs` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+  `video_id` BIGINT UNSIGNED NOT NULL COMMENT '视频ID',
+  `behavior_type` VARCHAR(20) NOT NULL COMMENT '行为类型(watch/like/comment/share/favorite)',
+  `duration` INT NOT NULL DEFAULT 0 COMMENT '行为持续时间(秒)',
+  `intensity` DECIMAL(5,2) NOT NULL DEFAULT 1.00 COMMENT '行为强度(0-10)',
+  `context` VARCHAR(100) COMMENT '行为上下文(feed/search/profile)',
+  `device_info` VARCHAR(200) COMMENT '设备信息',
+  `location` VARCHAR(100) COMMENT '地理位置',
+  `session_id` VARCHAR(64) COMMENT '会话ID',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_time` (`user_id`, `created_at`),
+  KEY `idx_video_time` (`video_id`, `created_at`),
+  KEY `idx_behavior_type` (`behavior_type`),
+  KEY `idx_created_at` (`created_at`),
+  KEY `idx_session` (`session_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户行为日志表';
+
+-- 7. 标签相似度表
+CREATE TABLE `tag_similarities` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `tag_name1` VARCHAR(50) NOT NULL COMMENT '标签1',
+  `tag_name2` VARCHAR(50) NOT NULL COMMENT '标签2',
+  `similarity` DECIMAL(5,4) NOT NULL DEFAULT 0.0000 COMMENT '相似度(0-1)',
+  `correlation` DECIMAL(5,4) NOT NULL DEFAULT 0.0000 COMMENT '相关性(0-1)',
+  `cooccurrence` BIGINT NOT NULL DEFAULT 0 COMMENT '共现次数',
+  `last_updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后更新时间',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_tag_pair` (`tag_name1`, `tag_name2`),
+  KEY `idx_tag1` (`tag_name1`),
+  KEY `idx_tag2` (`tag_name2`),
+  KEY `idx_similarity` (`similarity`),
+  KEY `idx_last_updated` (`last_updated`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='标签相似度表';
+
+-- 8. 创建索引优化
+-- 复合索引优化查询性能
+CREATE INDEX `idx_user_behavior_time` ON `user_behavior_logs` (`user_id`, `behavior_type`, `created_at`);
+CREATE INDEX `idx_video_score_time` ON `video_scores` (`final_score`, `last_calculated`);
+CREATE INDEX `idx_user_profile_stats` ON `user_profiles` (`total_watch`, `total_likes`, `engagement_level`);
+
+-- 9. 插入示例数据
+-- 插入示例标签
+INSERT INTO `video_tags` (`video_id`, `tag_name`, `tag_type`, `source`) VALUES
+(1, '搞笑', 'content', 'ai'),
+(1, '娱乐', 'category', 'manual'),
+(1, '开心', 'emotion', 'ai'),
+(2, '美食', 'content', 'ai'),
+(2, '生活', 'category', 'manual'),
+(2, '温馨', 'emotion', 'ai');
+
+-- 插入示例用户画像
+INSERT INTO `user_profiles` (`user_id`, `engagement_level`) VALUES
+(1, 'medium'),
+(2, 'high'),
+(3, 'low');
+
+-- 10. 创建视图优化查询
+-- 用户兴趣标签汇总视图
+CREATE VIEW `v_user_interest_summary` AS
+SELECT
+    ui.user_id,
+    u.username,
+    COUNT(ui.tag_name) as tag_count,
+    AVG(ui.weight) as avg_weight,
+    MAX(ui.last_update) as last_interest_update
+FROM user_interests ui
+JOIN users u ON ui.user_id = u.id
+GROUP BY ui.user_id, u.username;
+
+-- 视频标签汇总视图
+CREATE VIEW `v_video_tag_summary` AS
+SELECT
+    vt.video_id,
+    v.title,
+    COUNT(vt.tag_name) as tag_count,
+    AVG(vt.weight) as avg_weight,
+    GROUP_CONCAT(vt.tag_name) as tag_list
+FROM video_tags vt
+JOIN videos v ON vt.video_id = v.id
+GROUP BY vt.video_id, v.title;
+
+-- 11. 创建存储过程
+DELIMITER //
+
+-- 更新用户兴趣标签权重的存储过程
+CREATE PROCEDURE `sp_update_user_interest`(
+    IN p_user_id BIGINT,
+    IN p_tag_name VARCHAR(50),
+    IN p_weight_delta DECIMAL(10,4)
+)
+BEGIN
+    DECLARE v_current_weight DECIMAL(10,4);
+    DECLARE v_decay_rate DECIMAL(3,2);
+
+    -- 获取当前权重和衰减率
+    SELECT weight, decay_rate INTO v_current_weight, v_decay_rate
+    FROM user_interests
+    WHERE user_id = p_user_id AND tag_name = p_tag_name;
+
+    IF v_current_weight IS NULL THEN
+        -- 创建新的兴趣标签
+        INSERT INTO user_interests (user_id, tag_name, weight, last_update, update_count)
+        VALUES (p_user_id, p_tag_name, p_weight_delta, NOW(), 1);
+    ELSE
+        -- 更新现有兴趣标签
+        UPDATE user_interests
+        SET weight = v_current_weight * v_decay_rate + p_weight_delta,
+            last_update = NOW(),
+            update_count = update_count + 1
+        WHERE user_id = p_user_id AND tag_name = p_tag_name;
+    END IF;
+END //
+
+-- 计算视频综合评分的存储过程
+CREATE PROCEDURE `sp_calculate_video_score`(
+    IN p_video_id BIGINT
+)
+BEGIN
+    DECLARE v_hot_score DECIMAL(10,4);
+    DECLARE v_quality_score DECIMAL(10,4);
+    DECLARE v_relevance_score DECIMAL(10,4);
+    DECLARE v_freshness_score DECIMAL(10,4);
+    DECLARE v_final_score DECIMAL(10,4);
+
+    -- 计算热度分数（基于观看、点赞、评论、分享）
+    SELECT
+        (COUNT(DISTINCT wh.user_id) * 0.3 +
+         COUNT(DISTINCT CASE WHEN ubl.behavior_type = 'like' THEN ubl.user_id END) * 0.3 +
+         COUNT(DISTINCT CASE WHEN ubl.behavior_type = 'comment' THEN ubl.user_id END) * 0.2 +
+         COUNT(DISTINCT CASE WHEN ubl.behavior_type = 'share' THEN ubl.user_id END) * 0.2) * 10
+    INTO v_hot_score
+    FROM videos v
+    LEFT JOIN watch_histories wh ON v.id = wh.video_id
+    LEFT JOIN user_behavior_logs ubl ON v.id = ubl.video_id
+    WHERE v.id = p_video_id;
+
+    -- 计算质量分数（基于完整观看率）
+    SELECT
+        (COUNT(CASE WHEN wh.is_completed = 1 THEN 1 END) * 1.0 / COUNT(*)) * 100
+    INTO v_quality_score
+    FROM watch_histories wh
+    WHERE wh.video_id = p_video_id;
+
+    -- 计算相关性分数（基于标签匹配度）
+    SELECT
+        AVG(vt.weight) * 10
+    INTO v_relevance_score
+    FROM video_tags vt
+    WHERE vt.video_id = p_video_id;
+
+    -- 计算新鲜度分数（基于发布时间）
+    SELECT
+        GREATEST(0, 100 - DATEDIFF(NOW(), v.created_at) * 2)
+    INTO v_freshness_score
+    FROM videos v
+    WHERE v.id = p_video_id;
+
+    -- 计算最终综合分数
+    SET v_final_score = v_hot_score * 0.4 + v_quality_score * 0.3 +
+                       v_relevance_score * 0.2 + v_freshness_score * 0.1;
+
+    -- 更新或插入视频评分
+    INSERT INTO video_scores (video_id, hot_score, quality_score, relevance_score,
+                             freshness_score, final_score, last_calculated, score_version)
+    VALUES (p_video_id, v_hot_score, v_quality_score, v_relevance_score,
+            v_freshness_score, v_final_score, NOW(), 1)
+    ON DUPLICATE KEY UPDATE
+        hot_score = v_hot_score,
+        quality_score = v_quality_score,
+        relevance_score = v_relevance_score,
+        freshness_score = v_freshness_score,
+        final_score = v_final_score,
+        last_calculated = NOW(),
+        score_version = score_version + 1;
+END //
+
+DELIMITER ;
+
+-- 12. 创建触发器
+-- 用户观看历史更新后自动更新用户画像
+DELIMITER //
+CREATE TRIGGER `tr_watch_history_after_insert`
+AFTER INSERT ON `watch_histories`
+FOR EACH ROW
+BEGIN
+    UPDATE user_profiles
+    SET total_watch = total_watch + NEW.watch_duration,
+        last_active_at = NOW(),
+        avg_watch_duration = (total_watch + NEW.watch_duration) /
+                           (SELECT COUNT(*) FROM watch_histories WHERE user_id = NEW.user_id)
+    WHERE user_id = NEW.user_id;
+END //
+
+-- 用户行为日志更新后自动更新用户画像
+CREATE TRIGGER `tr_behavior_log_after_insert`
+AFTER INSERT ON `user_behavior_logs`
+FOR EACH ROW
+BEGIN
+    CASE NEW.behavior_type
+        WHEN 'like' THEN
+            UPDATE user_profiles
+            SET total_likes = total_likes + 1,
+                last_active_at = NOW()
+            WHERE user_id = NEW.user_id;
+        WHEN 'comment' THEN
+            UPDATE user_profiles
+            SET total_comments = total_comments + 1,
+                last_active_at = NOW()
+            WHERE user_id = NEW.user_id;
+        WHEN 'share' THEN
+            UPDATE user_profiles
+            SET total_shares = total_shares + 1,
+                last_active_at = NOW()
+            WHERE user_id = NEW.user_id;
+        WHEN 'favorite' THEN
+            UPDATE user_profiles
+            SET total_favorites = total_favorites + 1,
+                last_active_at = NOW()
+            WHERE user_id = NEW.user_id;
+    END CASE;
+END //
+DELIMITER ;
+
